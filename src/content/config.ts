@@ -1,11 +1,11 @@
 import { defineCollection, z } from 'astro:content';
 
-const fanficCollection = defineCollection({
+const fanfics = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
     summary: z.string(),
-    pubDate: z.date(),
+    pubDate: z.coerce.date(),
     year: z.number(),
     fandoms: z.array(z.string()),
     pairings: z.array(z.string()).optional(),
@@ -13,11 +13,15 @@ const fanficCollection = defineCollection({
     status: z.enum(['Complete', 'In Progress', 'Hiatus']),
     wordCount: z.number(),
     
-    // --- Multi-Chapter/Series Logic ---
+    // --- Multi-Chapter Work Logic (Single Fic) ---
     isMultiChapter: z.boolean().default(false),
-    // For individual chapters, link them back to a parent slug or ID
-    parentSlug: z.string().optional(), 
-    chapterNumber: z.number().optional(),
-    chapterTitle: z.string().optional(),
+    chapterNumber: z.number().optional(), // Chapter 1, 2, etc.
+    chaptersTotal: z.string().default("1"), // The "1" or "?" in "1/1" or "1/?"
+    
+    // --- Series Logic (Multi-Work Collection) ---
+    seriesName: z.string().optional(),     // The name of the overarching series
+    seriesPart: z.number().optional(),     // Part 1, Part 2 of that series
   }),
 });
+
+export const collections = { fanfics };

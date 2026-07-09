@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import FicBlurb from '../../components/FicBlurb.astro';
+
+export async function getStaticPaths() {
+  const allFics = await getCollection('fanfics');
+  const uniqueStatuses = [...new Set(allFics.map(fic => fic.data.status).filter(Boolean))];
+  
+  return uniqueStatuses.map(status => {
+    return {
+      params: { status: status.toLowerCase().replace(/ /g, '-') },
+      props: { statusName: status, fics: allFics.filter(fic => fic.data.status === status && (!fic.data.isMultiChapter || fic.data.chapterNumber === 1)) },
+    };
+  });
+}
+
+const { statusName, fics } = Astro.props;
+---
+
+<Layout title={`Status: ${statusName}`}>
+  <main class="archive-container">
+    <header class="archive-header">
+      <p class="meta-label">Completion Status Archive</p>
+      <h1>{statusName}</h1>
+    </header>
+    <div class="works-feed">
+      {fics.map(fic => <FicBlurb {...fic.data} slug={fic.slug} />)}
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .archive-container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; font-family: -apple-system, sans-serif; }
+  .archive-header { text-align: center; border-bottom: 2px solid var(--ao3-border, #ccc); padding-bottom: 1rem; margin-bottom: 2.5rem; }
+  .meta-label { text-transform: uppercase; font-size: 0.75rem; color: #777; }
+  .archive-header h1 { font-family: Georgia, serif; font-size: 2.3rem; font-weight: normal; margin: 0; }
+  .works-feed { display: flex; flex-direction: column; gap: 1.5rem; }
+</style>

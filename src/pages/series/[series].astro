@@ -1,0 +1,76 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import FicBlurb from '../../components/FicBlurb.astro';
+
+export async function getStaticPaths() {
+  const allFics = await getCollection('fanfics');
+  
+  // Extract every unique series name specified in the frontmatter
+  const uniqueSeries = [...new Set(allFics.map(fic => fic.data.seriesName).filter(Boolean))];
+  
+  return uniqueSeries.map(seriesName => {
+    const seriesSlug = seriesName.toLowerCase().replace(/ /g, '-');
+    
+    // Gather all fics matching this series name
+    const seriesFics = allFics.filter(fic => fic.data.seriesName === seriesName);
+    
+    // Sort logically by chronological timeline: Part 1 first, Part 2 second
+    const sortedSeries = seriesFics
+      .filter(fic => !fic.data.isMultiChapter || fic.data.chapterNumber === 1)
+      .sort((a, b) => (a.data.seriesPart || 0) - (b.data.seriesPart || 0));
+
+    // Calculate total running wordcount for the entire series sequence
+    const totalWords = seriesFics.reduce((sum, fic) => sum + (fic.data.wordCount || 0), 0);
+
+    return {
+      params: { series: seriesSlug },
+      props: { seriesName, fics: sortedSeries, totalWords },
+    };
+  });
+}
+
+const { seriesName, fics, totalWords } = Astro.props;
+---
+
+<Layout title={`Series: ${seriesName}`}>
+  <main class="archive-container">
+    <header class="series-header">
+      <p class="meta-label">Series Archive</p>
+      <h1>{seriesName}</h1>
+      <div class="series-stats">
+        <span><strong>Works:</strong> {fics.length}</span> | 
+        <span><strong>Total Words:</strong> {totalWords.toLocaleString()}</span>
+      </div>
+    </header>
+
+    <div class="works-feed">
+      {fics.map((fic) => (
+        <FicBlurb 
+          title={fic.data.title}
+          slug={fic.slug}
+          summary={fic.data.summary}
+          pubDate={fic.data.pubDate}
+          fandoms={fic.data.fandoms}
+          pairings={fic.data.pairings || []}
+          rating={fic.data.rating}
+          status={fic.data.status}
+          wordCount={fic.data.wordCount}
+          isMultiChapter={fic.data.isMultiChapter}
+          chapterNumber={fic.data.chapterNumber || 1}
+          chaptersTotal={fic.data.chaptersTotal || "1"}
+          seriesName={fic.data.seriesName}
+          seriesPart={fic.data.seriesPart}
+        />
+      ))}
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .archive-container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; font-family: -apple-system, sans-serif; }
+  .series-header { text-align: center; border-bottom: 2px solid var(--ao3-border, #ccc); padding-bottom: 1.5rem; margin-bottom: 2.5rem; }
+  .meta-label { text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; color: #777; margin-bottom: 0.2rem; }
+  .series-header h1 { font-family: Georgia, serif; font-size: 2.3rem; font-weight: normal; margin: 0; }
+  .series-stats { margin-top: 0.75rem; font-size: 0.9rem; color: #555; }
+</style>

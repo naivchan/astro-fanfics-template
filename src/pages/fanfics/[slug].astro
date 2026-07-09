@@ -54,10 +54,15 @@ if (entry.data.isMultiChapter && entry.data.chapterNumber) {
       </p>
     )}
     
-    <h1 class="story-title">
-      {entry.data.title} 
-      {entry.data.isMultiChapter && <span class="chapter-sub"> - Chapter {entry.data.chapterNumber}</span>}
-    </h1>
+    <!-- Overarching Work Title -->
+    <h1 class="story-title">{entry.data.title}</h1>
+    
+    <!-- AO3 Chapter Header Placement -->
+    {entry.data.isMultiChapter && (
+      <h2 class="chapter-title">
+        Chapter {entry.data.chapterNumber}: {entry.data.chapterTitle || `Chapter ${entry.data.chapterNumber}`}
+      </h2>
+    )}
     
     <div class="summary-box">
       <strong>Summary:</strong>
@@ -96,10 +101,18 @@ if (entry.data.isMultiChapter && entry.data.chapterNumber) {
 </Layout>
 
 <style>
-  /* All previous styles carry over seamlessly */
   .series-meta { font-style: italic; font-size: 0.95rem; margin-bottom: 0.5rem; color: #555; }
   .series-meta a { color: var(--ao3-red); text-decoration: none; font-weight: bold; }
-  .chapter-sub { font-size: 1.3rem; color: #555; font-weight: normal; }
+  
+  .chapter-title {
+    font-family: Georgia, serif;
+    font-size: 1.4rem;
+    font-weight: normal;
+    color: #444;
+    margin-top: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
   .chapter-navigation { display: flex; justify-content: space-between; align-items: center; margin: 2.5rem 0; padding: 0.5rem; border-top: 1px solid var(--ao3-border); border-bottom: 1px solid var(--ao3-border); background: #fcfcfc; font-size: 0.9rem; }
   .nav-button { width: 30%; }
   .nav-button a { color: var(--ao3-red); text-decoration: none; font-weight: bold; }
@@ -110,7 +123,7 @@ if (entry.data.isMultiChapter && entry.data.chapterNumber) {
   .meta-group dd { margin: 0; }
   .pairing { font-weight: bold; color: var(--ao3-tag-text); }
   .preface { text-align: center; margin: 2rem 0; }
-  .story-title { font-family: Georgia, serif; font-size: 2rem; font-weight: normal; }
+  .story-title { font-family: Georgia, serif; font-size: 2rem; font-weight: normal; margin-bottom: 0; }
   .summary-box { text-align: left; max-width: 600px; margin: 1.5rem auto; border: 1px solid var(--ao3-border); padding: 1rem; background: #fff; font-size: 0.9rem; }
   .story-body { font-family: Georgia, serif; font-size: 1.15rem; line-height: 1.7; max-width: 700px; margin: 0 auto; }
   .story-body :global(p) { margin-bottom: 1.5rem; }

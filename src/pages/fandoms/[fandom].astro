@@ -1,0 +1,70 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import FicBlurb from '../../components/FicBlurb.astro';
+
+export async function getStaticPaths() {
+  const allFics = await getCollection('fanfics');
+  
+  // Extract every unique fandom name across all markdown files
+  const uniqueFandoms = [...new Set(allFics.flatMap(fic => fic.data.fandoms || []))];
+  
+  return uniqueFandoms.map(fandom => {
+    // Generate a URL-friendly slug version of the fandom string
+    const fandomSlug = fandom.toLowerCase().replace(/ /g, '-');
+    
+    // Filter down to works belonging to this specific fandom (keeping only Chapter 1 for multi-chapter pieces)
+    const filteredFics = allFics
+      .filter(fic => fic.data.fandoms?.includes(fandom))
+      .filter(fic => !fic.data.isMultiChapter || fic.data.chapterNumber === 1)
+      .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+    return {
+      params: { fandom: fandomSlug },
+      props: { fandomName: fandom, fics: filteredFics },
+    };
+  });
+}
+
+const { fandomName, fics } = Astro.props;
+---
+
+<Layout title={`Fandom: ${fandomName}`}>
+  <main class="archive-container">
+    <header class="archive-header">
+      <p class="meta-label">Fandom Tag Archive</p>
+      <h1>{fandomName}</h1>
+      <p class="subtitle">Showing {fics.length} {fics.length === 1 ? 'work' : 'works'}</p>
+    </header>
+
+    <div class="works-feed">
+      {fics.map((fic) => (
+        <FicBlurb 
+          title={fic.data.title}
+          slug={fic.slug}
+          summary={fic.data.summary}
+          pubDate={fic.data.pubDate}
+          fandoms={fic.data.fandoms}
+          pairings={fic.data.pairings || []}
+          rating={fic.data.rating}
+          status={fic.data.status}
+          wordCount={fic.data.wordCount}
+          isMultiChapter={fic.data.isMultiChapter}
+          chapterNumber={fic.data.chapterNumber || 1}
+          chaptersTotal={fic.data.chaptersTotal || "1"}
+          seriesName={fic.data.seriesName}
+          seriesPart={fic.data.seriesPart}
+        />
+      ))}
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .archive-container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; font-family: -apple-system, sans-serif; }
+  .archive-header { text-align: center; border-bottom: 2px solid var(--ao3-border, #ccc); padding-bottom: 1rem; margin-bottom: 2.5rem; }
+  .meta-label { text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; color: #777; margin-bottom: 0.2rem; }
+  .archive-header h1 { font-family: Georgia, serif; font-size: 2.3rem; font-weight: normal; margin: 0; }
+  .subtitle { color: #666; font-style: italic; margin-top: 0.5rem; }
+  .works-feed { display: flex; flex-direction: column; gap: 1.5rem; }
+</style>

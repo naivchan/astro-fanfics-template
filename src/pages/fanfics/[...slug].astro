@@ -39,6 +39,10 @@ if (entry.data.isMultiChapter && entry.data.chapterNumber) {
       <dd>
         <a class="meta-link" href={`/rating/${entry.data.rating.toLowerCase()}`}>{entry.data.rating}</a>
       </dd>
+
+      <!-- New Live Category Metric -->
+      <dt>Category:</dt>
+      <dd>{entry.data.category || "Gen"}</dd>
       
       <!-- Live Fandom Links -->
       <dt>Fandom:</dt> 
@@ -63,7 +67,12 @@ if (entry.data.isMultiChapter && entry.data.chapterNumber) {
           ))}
         </dd>
       )}
-      
+
+
+      <!-- New Warnings Row -->
+      <dt>Archive Warning:</dt>
+      <dd class="meta-warnings">{ (entry.data.warnings || ["No Archive Warnings Apply"]).join(', ') }</dd>
+
       <!-- Stats Block with Live Status Link -->
       <dt>Stats:</dt>
       <dd>
@@ -150,6 +159,7 @@ if (entry.data.isMultiChapter && entry.data.chapterNumber) {
   .meta-group { display: grid; grid-template-columns: 120px 1fr; gap: 0.4rem 0; margin: 0; }
   .meta-group dt { font-weight: bold; text-align: right; padding-right: 1rem; color: #333; }
   .meta-group dd { margin: 0; }
+  .meta-warnings { color: #f75555; }
   
   /* Link Styling for Metadata Boxes */
   .meta-link { color: var(--ao3-red); text-decoration: none; }

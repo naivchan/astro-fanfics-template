@@ -52,6 +52,11 @@ chapterNumber: 1
 chaptersTotal: "?"
 seriesName: "The Grand Astro Chronicle"
 seriesPart: 1
+
+# New AO3 Square Fields
+category: "M/M"          # Options: M/M, F/F, F/M, Multi, Gen, Other
+warnings:                # Can list multiple warnings
+  - "No Archive Warnings Apply"
 ---
 
 Start typing the actual body prose of your story right here below the three dashes.

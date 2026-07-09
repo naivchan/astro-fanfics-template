@@ -50,12 +50,6 @@ const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chapte
   )}
 
   <div class="blurb-header">
-    <div class="ao3-symbols">
-      <span class={`symbol rating-${ratingClass}`} title={`Rating: ${rating}`}></span>
-      <span class="symbol category" title="Category"></span>
-      <span class="symbol warnings" title="Archive Warnings"></span>
-      <span class={`symbol status-${status === 'Complete' ? 'complete' : 'incomplete'}`} title={`Status: ${status}`}></span>
-    </div>
 
     <div class="title-block">
       <h3 class="heading">
@@ -119,22 +113,7 @@ const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chapte
     text-decoration: underline;
   }
   .blurb-header { display: flex; align-items: flex-start; margin-bottom: 0.5rem; }
-  .ao3-symbols {
-    display: grid;
-    grid-template-columns: repeat(2, 12px);
-    gap: 1px;
-    border: 1px solid var(--ao3-border);
-    padding: 1px;
-    margin-right: 0.75rem;
-    margin-top: 4px;
-  }
-  .symbol { width: 12px; height: 12px; background: #eee; }
-  .rating-general { background-color: var(--rating-general); }
-  .rating-teen { background-color: var(--rating-teen); }
-  .rating-mature { background-color: var(--rating-mature); }
-  .rating-explicit { background-color: var(--rating-explicit); }
-  .status-complete { background-color: var(--rating-general); }
-  .status-incomplete { background-color: var(--rating-explicit); }
+ 
 
   .heading { margin: 0; }
   .heading a { color: var(--ao3-red); text-decoration: none; font-weight: bold; font-size: 1.1rem; }

@@ -1,0 +1,61 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+  currentSeries?: string;
+  currentChapter?: number;
+}
+
+const { currentSeries, currentChapter } = Astro.props;
+
+// If this story isn't part of a multi-chapter series, hide the navigation
+if (!currentSeries || currentChapter === undefined) return null;
+
+const allFics = await getCollection('fanfics');
+const siblingChapters = allFics
+  .filter(fic => fic.data.series === currentSeries && fic.data.chapterNumber !== undefined)
+  .sort((a, b) => (a.data.chapterNumber || 0) - (b.data.chapterNumber || 0));
+
+const prevChapter = siblingChapters.find(ch => ch.data.chapterNumber === currentChapter - 1);
+const nextChapter = siblingChapters.find(ch => ch.data.chapterNumber === currentChapter + 1);
+---
+
+<nav class="chapter-navigation">
+  <div class="nav-button">
+    {prevChapter && <a href={`/fanfics/${prevChapter.slug}`}>← Previous Chapter</a>}
+  </div>
+  
+  <div class="chapter-dropdown">
+    <label for="chapter-select">Chapter: </label>
+    <select id="chapter-select" onchange="window.location.href=this.value">
+      {siblingChapters.map(ch => (
+        <option value={`/fanfics/${ch.slug}`} selected={ch.data.chapterNumber === currentChapter}>
+          {ch.data.chapterNumber}: {ch.data.title}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  <div class="nav-button">
+    {nextChapter && <a href={`/fanfics/${nextChapter.slug}`}>Next Chapter →</a>}
+  </div>
+</nav>
+
+<style>
+  .chapter-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2.5rem 0;
+    padding: 0.5rem;
+    border-top: 1px solid var(--ao3-border);
+    border-bottom: 1px solid var(--ao3-border);
+    background: #fcfcfc;
+    font-size: 0.9rem;
+  }
+  .nav-button { width: 30%; }
+  .nav-button a { color: var(--ao3-red); text-decoration: none; font-weight: bold; }
+  .nav-button a:hover { text-decoration: underline; }
+  .chapter-dropdown { width: 40%; text-align: center; }
+  select { padding: 0.2rem; font-family: sans-serif; }
+</style>

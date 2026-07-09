@@ -9,7 +9,10 @@ interface Props {
   wordCount: number;
   slug: string;
   
-  // Accept either the single string or individual chapter props passed from collections
+  // New matching schema keys
+  category?: 'M/M' | 'F/F' | 'F/M' | 'Multi' | 'Gen' | 'Other';
+  warnings?: string[];
+
   chapters?: string; 
   isMultiChapter?: boolean;
   chapterNumber?: number;
@@ -27,6 +30,8 @@ const {
   status, 
   wordCount, 
   slug,
+  category = "Gen",
+  warnings = ["No Archive Warnings Apply"],
   chapters,
   isMultiChapter,
   chapterNumber = 1,
@@ -36,13 +41,16 @@ const {
 } = Astro.props;
 
 const ratingClass = rating.toLowerCase();
+const categoryClass = category.toLowerCase().replace('/', '-');
 
-// Determine display format for the chapters stat line
+// AO3 Warning shorthand: If it contains major alerts, color it red; otherwise clean gray/green
+const hasMajorWarnings = warnings.some(w => w !== "No Archive Warnings Apply" && w !== "Choose Not To Use Archive Warnings");
+const warningClass = hasMajorWarnings ? "major-warning" : "safe-warning";
+
 const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chaptersTotal}` : "1/1");
 ---
 
 <div class="ao3-blurb">
-  <!-- Optional Series Meta Display -->
   {seriesName && (
     <p class="series-meta">
       Part {seriesPart} of the <a href={`/series/${seriesName.toLowerCase().replace(/ /g, '-')}`}>{seriesName}</a> series
@@ -50,6 +58,15 @@ const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chapte
   )}
 
   <div class="blurb-header">
+    <!-- Complete 4-Square AO3 Badge Grid -->
+    <div class="ao3-symbols">
+      <span class={`symbol rating-${ratingClass}`} title={`Rating: ${rating}`}></span>
+      <span class={`symbol category-${categoryClass}`} title={`Category: ${category}`}>
+        <span class="symbol-text">{category.charAt(0)}</span>
+      </span>
+      <span class={`symbol warning-${warningClass}`} title={`Warnings: ${warnings.join(', ')}`}></span>
+      <span class={`symbol status-${status === 'Complete' ? 'complete' : 'incomplete'}`} title={`Status: ${status}`}></span>
+    </div>
 
     <div class="title-block">
       <h3 class="heading">
@@ -67,11 +84,14 @@ const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chapte
   </div>
 
   <ul class="tags-list">
-    <!-- Active Relationship Archive Links -->
     {pairings.map(p => (
       <li class="tag pairing">
         <a href={`/pairings/${p.toLowerCase().replace(/[\/ ]/g, '-')}`}>{p}</a>
       </li>
+    ))}
+    <!-- Show archive warning tags in the main tag list block -->
+    {warnings.map(w => (
+      <li class="tag warning-tag"><a href="#">{w}</a></li>
     ))}
   </ul>
 
@@ -82,7 +102,6 @@ const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chapte
   <dl class="stats">
     <dt>Words:</dt><dd>{wordCount.toLocaleString()}</dd>
     <dt>Chapters:</dt><dd>{chaptersDisplay}</dd>
-    <!-- Live Status Link -->
     <dt>Status:</dt>
     <dd>
       <a class="status-link" href={`/status/${status.toLowerCase().replace(/ /g, '-')}`}>{status}</a>
@@ -91,29 +110,44 @@ const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chapte
 </div>
 
 <style>
-  .ao3-blurb {
-    border: 1px solid var(--ao3-border);
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    background: var(--ao3-blurb-bg);
-    font-size: 0.9rem;
-  }
-  .series-meta {
-    font-style: italic;
-    font-size: 0.85rem;
-    margin: 0 0 0.5rem 0;
-    color: #555;
-  }
-  .series-meta a {
-    color: var(--ao3-red);
-    text-decoration: none;
-    font-weight: bold;
-  }
-  .series-meta a:hover {
-    text-decoration: underline;
-  }
+  .ao3-blurb { border: 1px solid var(--ao3-border); padding: 1rem; margin-bottom: 1.5rem; background: var(--ao3-blurb-bg); font-size: 0.9rem; }
+  .series-meta { font-style: italic; font-size: 0.85rem; margin: 0 0 0.5rem 0; color: #555; }
+  .series-meta a { color: var(--ao3-red); text-decoration: none; font-weight: bold; }
+  .series-meta a:hover { text-decoration: underline; }
   .blurb-header { display: flex; align-items: flex-start; margin-bottom: 0.5rem; }
- 
+  
+  /* The Authentic Grid Layout */
+  .ao3-symbols {
+    display: grid;
+    grid-template-columns: repeat(2, 14px);
+    grid-template-rows: repeat(2, 14px);
+    gap: 2px;
+    border: 1px solid var(--ao3-border);
+    padding: 2px;
+    margin-right: 0.75rem;
+    margin-top: 4px;
+    background: #fff;
+  }
+  .symbol { width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; color: #fff; text-transform: uppercase; }
+  
+  /* Color Code Mappings */
+  .rating-general { background-color: #2a8314; } /* Green */
+  .rating-teen { background-color: #e2b100; }    /* Yellow */
+  .rating-mature { background-color: #df6400; }  /* Orange */
+  .rating-explicit { background-color: #990000; }/* Red */
+
+  .category-m-m { background-color: #a52a2a; }   /* Purple/Brownish tone */
+  .category-f-f { background-color: #e66; }      /* Pinkish/Red */
+  .category-f-m { background-color: #89cff0; }  /* Light Blue */
+  .category-gen { background-color: #999; }      /* Gray */
+  .category-multi { background-color: #9370db; }/* Purple */
+  .symbol-text { font-family: sans-serif; scale: 0.95; }
+
+  .warning-safe-warning { background-color: #999; }
+  .warning-major-warning { background-color: #990000; }
+
+  .status-complete { background-color: #2a8314; }
+  .status-incomplete { background-color: #990000; }
 
   .heading { margin: 0; }
   .heading a { color: var(--ao3-red); text-decoration: none; font-weight: bold; font-size: 1.1rem; }
@@ -125,16 +159,11 @@ const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chapte
   .tags-list { margin: 0.5rem 0; padding: 0; display: block; }
   .tag { display: inline; font-size: 0.85rem; margin-right: 0.5rem; }
   .tag.pairing a { color: var(--ao3-tag-text); font-weight: bold; text-decoration: none; }
-  .tag.pairing a:hover { background: #e2e2e2; }
+  .tag.warning-tag a { color: #f75555; text-decoration: none; }
   .tag::after { content: ","; }
   .tag:last-child::after { content: ""; }
 
-  .summary {
-    margin: 0.75rem 0;
-    padding-left: 0.75rem;
-    border-left: 3px solid var(--ao3-border);
-    font-style: italic;
-  }
+  .summary { margin: 0.75rem 0; padding-left: 0.75rem; border-left: 3px solid var(--ao3-border); font-style: italic; }
   .stats { margin: 0.5rem 0 0 0; display: flex; font-size: 0.8rem; }
   .stats dt { font-weight: bold; margin-right: 0.25rem; }
   .stats dd { margin-right: 1rem; }

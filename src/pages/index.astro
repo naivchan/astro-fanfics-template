@@ -12,6 +12,12 @@ const uniqueWorks = sortedFics.filter((fic) => {
   if (!fic.data.isMultiChapter) return true;
   return fic.data.chapterNumber === 1;
 });
+
+// Dynamically gather unique filter criteria across your works for the sidebar checkboxes
+const uniqueFandoms = [...new Set(uniqueWorks.flatMap(f => f.data.fandoms || []))].sort();
+const uniquePairings = [...new Set(uniqueWorks.flatMap(f => f.data.pairings || []))].sort();
+const uniqueRatings = [...new Set(uniqueWorks.map(f => f.data.rating).filter(Boolean))];
+const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Boolean))];
 ---
 
 <Layout title="Works Archive">
@@ -30,32 +36,149 @@ const uniqueWorks = sortedFics.filter((fic) => {
 
     <hr class="nav-divider" />
 
-    <div class="works-feed">
-      {uniqueWorks.map((fic) => (
-        <FicBlurb 
-          title={fic.data.title}
-          slug={fic.slug}
-          summary={fic.data.summary}
-          pubDate={fic.data.pubDate}
-          fandoms={fic.data.fandoms}
-          pairings={fic.data.pairings || []}
-          rating={fic.data.rating}
-          status={fic.data.status}
-          wordCount={fic.data.wordCount}
-          isMultiChapter={fic.data.isMultiChapter}
-          chapterNumber={fic.data.chapterNumber || 1}
-          chaptersTotal={fic.data.chaptersTotal || "1"}
-          seriesName={fic.data.seriesName}
-          seriesPart={fic.data.seriesPart}
-        />
-      ))}
+    <div class="archive-layout">
+      
+      <section class="feed-column">
+        <div class="filter-results-summary" id="results-summary">
+          Showing All {uniqueWorks.length} Works
+        </div>
+
+        <div class="works-feed">
+          {uniqueWorks.map((fic) => (
+            <div 
+              class="filterable-work-card"
+              data-fandoms={JSON.stringify(fic.data.fandoms || [])}
+              data-pairings={JSON.stringify(fic.data.pairings || [])}
+              data-rating={fic.data.rating}
+              data-status={fic.data.status}
+            >
+              <FicBlurb 
+                title={fic.data.title}
+                slug={fic.slug}
+                summary={fic.data.summary}
+                pubDate={fic.data.pubDate}
+                fandoms={fic.data.fandoms}
+                pairings={fic.data.pairings || []}
+                rating={fic.data.rating}
+                status={fic.data.status}
+                wordCount={fic.data.wordCount}
+                isMultiChapter={fic.data.isMultiChapter}
+                chapterNumber={fic.data.chapterNumber || 1}
+                chaptersTotal={fic.data.chaptersTotal || "1"}
+                seriesName={fic.data.seriesName}
+                seriesPart={fic.data.seriesPart}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <aside class="filter-sidebar">
+        <div class="sidebar-header">
+          <h3>Filter Results</h3>
+        </div>
+        
+        <form id="filter-form">
+          <details open class="filter-group">
+            <summary>Fandoms</summary>
+            <div class="filter-choices">
+              {uniqueFandoms.map(fandom => (
+                <label class="choice-label">
+                  <input type="checkbox" name="fandom" value={fandom} /> {fandom}
+                </label>
+              ))}
+            </div>
+          </details>
+
+          <details open class="filter-group">
+            <summary>Relationships</summary>
+            <div class="filter-choices">
+              {uniquePairings.map(pairing => (
+                <label class="choice-label">
+                  <input type="checkbox" name="pairing" value={pairing} /> {pairing}
+                </label>
+              ))}
+            </div>
+          </details>
+
+          <details open class="filter-group">
+            <summary>Rating</summary>
+            <div class="filter-choices">
+              {uniqueRatings.map(rating => (
+                <label class="choice-label">
+                  <input type="checkbox" name="rating" value={rating} /> {rating}
+                </label>
+              ))}
+            </div>
+          </details>
+
+          <details open class="filter-group">
+            <summary>Status</summary>
+            <div class="filter-choices">
+              {uniqueStatuses.map(status => (
+                <label class="choice-label">
+                  <input type="checkbox" name="status" value={status} /> {status}
+                </label>
+              ))}
+            </div>
+          </details>
+
+          <button type="reset" id="reset-filters" class="ao3-button">Clear Filters</button>
+        </form>
+      </aside>
+
     </div>
   </main>
 </Layout>
 
+<script>
+  const form = document.getElementById('filter-form') as HTMLFormElement;
+  const cards = document.querySelectorAll('.filterable-work-card') as NodeListOf<HTMLElement>;
+  const summary = document.getElementById('results-summary');
+  const resetBtn = document.getElementById('reset-filters');
+
+  function updateFilters() {
+    const formData = new FormData(form);
+    const selectedFandoms = formData.getAll('fandom') as string[];
+    const selectedPairings = formData.getAll('pairing') as string[];
+    const selectedRatings = formData.getAll('rating') as string[];
+    const selectedStatuses = formData.getAll('status') as string[];
+
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const cardFandoms = JSON.parse(card.dataset.fandoms || '[]') as string[];
+      const cardPairings = JSON.parse(card.dataset.pairings || '[]') as string[];
+      const cardRating = card.dataset.rating || '';
+      const cardStatus = card.dataset.status || '';
+
+      const fandomMatch = selectedFandoms.length === 0 || selectedFandoms.some(f => cardFandoms.includes(f));
+      const pairingMatch = selectedPairings.length === 0 || selectedPairings.some(p => cardPairings.includes(p));
+      const ratingMatch = selectedRatings.length === 0 || selectedRatings.includes(cardRating);
+      const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(cardStatus);
+
+      if (fandomMatch && pairingMatch && ratingMatch && statusMatch) {
+        card.style.display = 'block';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (summary) {
+      summary.textContent = `Showing ${visibleCount} of ${cards.length} Works`;
+    }
+  }
+
+  form?.addEventListener('change', updateFilters);
+  resetBtn?.addEventListener('click', () => {
+    setTimeout(updateFilters, 10);
+  });
+</script>
+
 <style>
   .archive-container {
-    max-width: 800px;
+    max-width: 1080px; /* Widened slightly to accommodate the sidebar without squeezing your original content size */
     margin: 2rem auto;
     padding: 0 1rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -116,5 +239,99 @@ const uniqueWorks = sortedFics.filter((fic) => {
     border: 0;
     border-top: 1px solid var(--ao3-border, #ccc);
     margin-bottom: 2rem;
+  }
+
+  /* Filtering Layout Styles */
+  .archive-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+  .feed-column {
+    flex: 1;
+    min-width: 0;
+  }
+  .filter-results-summary {
+    background: #f4f4f4;
+    border: 1px solid var(--ao3-border, #ccc);
+    padding: 0.4rem 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #444;
+    border-radius: 3px;
+  }
+  .filter-sidebar {
+    width: 260px;
+    background: #fbfbfb;
+    border: 1px solid var(--ao3-border, #ccc);
+    border-radius: 4px;
+    padding: 1rem;
+    flex-shrink: 0;
+  }
+  .sidebar-header h3 {
+    margin: 0 0 1rem 0;
+    font-family: Georgia, serif;
+    color: #900;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.25rem;
+    font-weight: normal;
+  }
+  .filter-group {
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+  }
+  .filter-group summary {
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #333;
+    outline: none;
+    user-select: none;
+  }
+  .filter-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.5rem 0.25rem 0.25rem 0.5rem;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .choice-label {
+    font-size: 0.85rem;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+  }
+  .choice-label input {
+    cursor: pointer;
+  }
+  .ao3-button {
+    width: 100%;
+    background: #e1e1e1;
+    border: 1px solid #bbb;
+    border-radius: 3px;
+    padding: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    margin-top: 0.5rem;
+  }
+  .ao3-button:hover {
+    background: #d4d4d4;
+  }
+
+  @media (max-width: 768px) {
+    .archive-layout {
+      flex-direction: column-reverse;
+    }
+    .filter-sidebar {
+      width: 100%;
+    }
   }
 </style>

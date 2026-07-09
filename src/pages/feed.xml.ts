@@ -3,19 +3,21 @@ import { getCollection } from 'astro:content';
 
 export async function GET(context) {
   const fics = await getCollection('fanfics');
+  
+  // Sort with newest stories/chapters first
   const sortedFics = fics.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
   return rss({
-    title: 'Archive of Our Own (Astro Edition)',
-    description: 'Latest updates and creative prose additions.',
-    site: context.site || 'https://yourdomain.com',
+    title: 'My Fanfic Archive',
+    description: 'Latest creative prose additions and story updates.',
+    site: context.site,
     items: sortedFics.map((fic) => ({
       title: fic.data.isMultiChapter 
-        ? `${fic.data.title} (Ch. ${fic.data.chapterNumber})` 
+        ? `${fic.data.title} - Chapter ${fic.data.chapterNumber}: ${fic.data.chapterTitle || ''}` 
         : fic.data.title,
       pubDate: fic.data.pubDate,
       description: fic.data.summary,
-      link: `/fanfics/${fic.slug}/`,
+      link: `/fanfics/${fic.slug}`,
     })),
   });
 }

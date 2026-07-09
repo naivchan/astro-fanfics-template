@@ -34,15 +34,42 @@ if (entry.data.isMultiChapter && entry.data.chapterNumber) {
 <Layout title={entry.data.title}>
   <div class="ao3-meta-box">
     <dl class="meta-group">
-      <dt>Rating:</dt> <dd>{entry.data.rating}</dd>
-      <dt>Fandom:</dt> <dd>{entry.data.fandoms.join(', ')}</dd>
-      {entry.data.pairings && <dt>Relationship:</dt> <dd class="pairing">{entry.data.pairings.join(', ')}</dd>}
+      <!-- Live Rating Link -->
+      <dt>Rating:</dt> 
+      <dd>
+        <a class="meta-link" href={`/rating/${entry.data.rating.toLowerCase()}`}>{entry.data.rating}</a>
+      </dd>
       
+      <!-- Live Fandom Links -->
+      <dt>Fandom:</dt> 
+      <dd>
+        {entry.data.fandoms.map((fandom, i) => (
+          <span>
+            <a class="meta-link" href={`/fandoms/${fandom.toLowerCase().replace(/ /g, '-')}`}>{fandom}</a>
+            {i < entry.data.fandoms.length - 1 && ", "}
+          </span>
+        ))}
+      </dd>
+      
+      <!-- Live Relationship Links -->
+      {entry.data.pairings && (
+        <dt>Relationship:</dt> 
+        <dd class="pairing">
+          {entry.data.pairings.map((pairing, i) => (
+            <span>
+              <a class="pairing-link" href={`/pairings/${pairing.toLowerCase().replace(/[\/ ]/g, '-')}`}>{pairing}</a>
+              {i < entry.data.pairings.length - 1 && ", "}
+            </span>
+          ))}
+        </dd>
+      )}
+      
+      <!-- Stats Block with Live Status Link -->
       <dt>Stats:</dt>
       <dd>
         <span><strong>Words:</strong> {entry.data.wordCount.toLocaleString()}</span> | 
         <span><strong>Chapters:</strong> {entry.data.isMultiChapter ? `${entry.data.chapterNumber}/${entry.data.chaptersTotal}` : "1/1"}</span> | 
-        <span><strong>Status:</strong> {entry.data.status}</span>
+        <span><strong>Status:</strong> <a class="meta-link" href={`/status/${entry.data.status.toLowerCase().replace(/ /g, '-')}`}>{entry.data.status}</a></span>
       </dd>
     </dl>
   </div>
@@ -103,6 +130,7 @@ if (entry.data.isMultiChapter && entry.data.chapterNumber) {
 <style>
   .series-meta { font-style: italic; font-size: 0.95rem; margin-bottom: 0.5rem; color: #555; }
   .series-meta a { color: var(--ao3-red); text-decoration: none; font-weight: bold; }
+  .series-meta a:hover { text-decoration: underline; }
   
   .chapter-title {
     font-family: Georgia, serif;
@@ -117,11 +145,18 @@ if (entry.data.isMultiChapter && entry.data.chapterNumber) {
   .nav-button { width: 30%; }
   .nav-button a { color: var(--ao3-red); text-decoration: none; font-weight: bold; }
   .chapter-dropdown { width: 40%; text-align: center; }
+  
   .ao3-meta-box { background: var(--ao3-meta-bg); border: 1px solid var(--ao3-border); padding: 1rem; font-size: 0.85rem; margin-bottom: 2rem; }
   .meta-group { display: grid; grid-template-columns: 120px 1fr; gap: 0.4rem 0; margin: 0; }
-  .meta-group dt { font-weight: bold; text-align: right; padding-right: 1rem; }
+  .meta-group dt { font-weight: bold; text-align: right; padding-right: 1rem; color: #333; }
   .meta-group dd { margin: 0; }
-  .pairing { font-weight: bold; color: var(--ao3-tag-text); }
+  
+  /* Link Styling for Metadata Boxes */
+  .meta-link { color: var(--ao3-red); text-decoration: none; }
+  .meta-link:hover { text-decoration: underline; }
+  .pairing-link { color: var(--ao3-tag-text); font-weight: bold; text-decoration: none; }
+  .pairing-link:hover { text-decoration: underline; }
+
   .preface { text-align: center; margin: 2rem 0; }
   .story-title { font-family: Georgia, serif; font-size: 2rem; font-weight: normal; margin-bottom: 0; }
   .summary-box { text-align: left; max-width: 600px; margin: 1.5rem auto; border: 1px solid var(--ao3-border); padding: 1rem; background: #fff; font-size: 0.9rem; }

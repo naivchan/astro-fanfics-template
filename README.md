@@ -1,5 +1,5 @@
 
-Example frontmatter
+Example frontmatter for fanfic markdown files stored in src/content/fanfics
 ```markdown
 ---
 title: "The Overarching Work Title"
@@ -26,8 +26,6 @@ seriesPart: 1
 Start typing the actual body prose of your story right here below the three dashes.
 
 ```
-
-Here is a definitive blueprint containing every metadata configuration field we built into your system. You can copy and paste this directly into the top of any new `.md` file to use as a template.
 
 ### The Ultimate Frontmatter Reference Template
 
@@ -62,6 +60,7 @@ warnings:                # Can list multiple warnings
 Start typing the actual body prose of your story right here below the three dashes.
 
 ```
+
 
 ---
 

@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import FicBlurb from '../../components/FicBlurb.astro';
+
+export async function getStaticPaths() {
+  const allFics = await getCollection('fanfics');
+  const uniquePairings = [...new Set(allFics.flatMap(fic => fic.data.pairings || []))];
+  
+  return uniquePairings.map(pairing => {
+    const pairingSlug = pairing.toLowerCase().replace(/[\/ ]/g, '-'); // Turns "A/B" into "a-b"
+    const filteredFics = allFics
+      .filter(fic => fic.data.pairings?.includes(pairing))
+      .filter(fic => !fic.data.isMultiChapter || fic.data.chapterNumber === 1);
+
+    return {
+      params: { pairing: pairingSlug },
+      props: { pairingName: pairing, fics: filteredFics },
+    };
+  });
+}
+
+const { pairingName, fics } = Astro.props;
+---
+
+<Layout title={`Relationship: ${pairingName}`}>
+  <main class="archive-container">
+    <header class="archive-header">
+      <p class="meta-label">Relationship Archive</p>
+      <h1>{pairingName}</h1>
+    </header>
+    <div class="works-feed">
+      {fics.map(fic => <FicBlurb {...fic.data} slug={fic.slug} />)}
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .archive-container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; font-family: -apple-system, sans-serif; }
+  .archive-header { text-align: center; border-bottom: 2px solid var(--ao3-border, #ccc); padding-bottom: 1rem; margin-bottom: 2.5rem; }
+  .meta-label { text-transform: uppercase; font-size: 0.75rem; color: #777; }
+  .archive-header h1 { font-family: Georgia, serif; font-size: 2.3rem; font-weight: normal; margin: 0; }
+  .works-feed { display: flex; flex-direction: column; gap: 1.5rem; }
+</style>

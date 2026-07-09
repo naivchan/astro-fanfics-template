@@ -1,0 +1,96 @@
+---
+interface Props {
+  title: string;
+  summary: string;
+  fandoms: string[];
+  pairings?: string[];
+  rating: 'General' | 'Teen' | 'Mature' | 'Explicit';
+  status: 'Complete' | 'In Progress' | 'Hiatus';
+  wordCount: number;
+  chapters: string;
+  slug: string;
+}
+
+const { title, summary, fandoms, pairings = [], rating, status, wordCount, chapters, slug } = Astro.props;
+const ratingClass = rating.toLowerCase();
+---
+
+<div class="ao3-blurb">
+  <div class="blurb-header">
+    <div class="ao3-symbols">
+      <span class={`symbol rating-${ratingClass}`} title={`Rating: ${rating}`}></span>
+      <span class="symbol category" title="Category"></span>
+      <span class="symbol warnings" title="Archive Warnings"></span>
+      <span class={`symbol status-${status === 'Complete' ? 'complete' : 'incomplete'}`} title={`Status: ${status}`}></span>
+    </div>
+
+    <div class="title-block">
+      <h3 class="heading">
+        <a href={`/fanfics/${slug}`}>{title}</a>
+      </h3>
+      <div class="fandoms">
+        {fandoms.join(', ')}
+      </div>
+    </div>
+  </div>
+
+  <ul class="tags-list">
+    {pairings.map(p => <li class="tag pairing"><a href="#">{p}</a></li>)}
+  </ul>
+
+  <blockquote class="summary">
+    <p>{summary}</p>
+  </blockquote>
+
+  <dl class="stats">
+    <dt>Words:</dt><dd>{wordCount.toLocaleString()}</dd>
+    <dt>Chapters:</dt><dd>{chapters}</dd>
+    <dt>Status:</dt><dd>{status}</dd>
+  </dl>
+</div>
+
+<style>
+  .ao3-blurb {
+    border: 1px solid var(--ao3-border);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: var(--ao3-blurb-bg);
+    font-size: 0.9rem;
+  }
+  .blurb-header { display: flex; align-items: flex-start; margin-bottom: 0.5rem; }
+  .ao3-symbols {
+    display: grid;
+    grid-template-columns: repeat(2, 12px);
+    gap: 1px;
+    border: 1px solid var(--ao3-border);
+    padding: 1px;
+    margin-right: 0.75rem;
+    margin-top: 4px;
+  }
+  .symbol { width: 12px; height: 12px; background: #eee; }
+  .rating-general { background-color: var(--rating-general); }
+  .rating-teen { background-color: var(--rating-teen); }
+  .rating-mature { background-color: var(--rating-mature); }
+  .rating-explicit { background-color: var(--rating-explicit); }
+  .status-complete { background-color: var(--rating-general); }
+  .status-incomplete { background-color: var(--rating-explicit); }
+
+  .heading a { color: var(--ao3-red); text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+  .fandoms { font-weight: bold; font-size: 0.85rem; margin-top: 0.2rem; }
+  
+  .tags-list { margin: 0.5rem 0; padding: 0; display: block; }
+  .tag { display: inline; font-size: 0.85rem; margin-right: 0.5rem; }
+  .tag.pairing a { color: var(--ao3-tag-text); font-weight: bold; text-decoration: none; }
+  .tag::after { content: ","; }
+  .tag:last-child::after { content: ""; }
+
+  .summary {
+    margin: 0.75rem 0;
+    padding-left: 0.75rem;
+    border-left: 3px solid var(--ao3-border);
+    font-style: italic;
+  }
+  .stats { margin: 0.5rem 0 0 0; display: flex; font-size: 0.8rem; }
+  .stats dt { font-weight: bold; margin-right: 0.25rem; }
+  .stats dd { margin-right: 1rem; }
+</style>

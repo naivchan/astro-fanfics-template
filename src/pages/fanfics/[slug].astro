@@ -1,0 +1,86 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import ChapterNav from '../../components/ChapterNav.astro';
+
+export async function getStaticPaths() {
+  const fics = await getCollection('fanfics');
+  return fics.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<Layout title={entry.data.title}>
+  <div class="ao3-meta-box">
+    <dl class="meta-group">
+      <dt>Rating:</dt>
+      <dd>{entry.data.rating}</dd>
+      
+      <dt>Fandom:</dt>
+      <dd>{entry.data.fandoms.join(', ')}</dd>
+
+      {entry.data.pairings && (
+        <dt>Relationship:</dt>
+        <dd class="pairing">{entry.data.pairings.join(', ')}</dd>
+      )}
+
+      <dt>Stats:</dt>
+      <dd>
+        <span><strong>Words:</strong> {entry.data.wordCount}</span> | 
+        <span><strong>Chapters:</strong> {entry.data.chapters}</span> | 
+        <span><strong>Status:</strong> {entry.data.status}</span>
+      </dd>
+    </dl>
+  </div>
+
+  <div class="preface">
+    <h1 class="story-title">{entry.data.title}</h1>
+    <div class="summary-box">
+      <strong>Summary:</strong>
+      <p>{entry.data.summary}</p>
+    </div>
+  </div>
+
+  <hr />
+
+  <article class="story-body">
+    <Content />
+  </article>
+
+  <ChapterNav 
+    currentSeries={entry.data.series} 
+    currentChapter={entry.data.chapterNumber} 
+  />
+</Layout>
+
+<style>
+  .ao3-meta-box {
+    background: var(--ao3-meta-bg);
+    border: 1px solid var(--ao3-border);
+    padding: 1rem;
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+  }
+  .meta-group { display: grid; grid-template-columns: 120px 1fr; gap: 0.4rem 0; margin: 0; }
+  .meta-group dt { font-weight: bold; text-align: right; padding-right: 1rem; }
+  .meta-group dd { margin: 0; }
+  .pairing { font-weight: bold; color: var(--ao3-tag-text); }
+  
+  .preface { text-align: center; margin: 2rem 0; }
+  .story-title { font-family: Georgia, serif; font-size: 2rem; font-weight: normal; }
+  .summary-box { text-align: left; max-width: 600px; margin: 1.5rem auto; border: 1px solid var(--ao3-border); padding: 1rem; background: #fff; font-size: 0.9rem; }
+
+  .story-body {
+    font-family: Georgia, serif;
+    font-size: 1.15rem;
+    line-height: 1.7;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .story-body :global(p) { margin-bottom: 1.5rem; }
+</style>

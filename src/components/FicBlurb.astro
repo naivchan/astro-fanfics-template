@@ -7,15 +7,48 @@ interface Props {
   rating: 'General' | 'Teen' | 'Mature' | 'Explicit';
   status: 'Complete' | 'In Progress' | 'Hiatus';
   wordCount: number;
-  chapters: string;
   slug: string;
+  
+  // Accept either the single string or individual chapter props passed from collections
+  chapters?: string; 
+  isMultiChapter?: boolean;
+  chapterNumber?: number;
+  chaptersTotal?: string | number;
+  seriesName?: string;
+  seriesPart?: number;
 }
 
-const { title, summary, fandoms, pairings = [], rating, status, wordCount, chapters, slug } = Astro.props;
+const { 
+  title, 
+  summary, 
+  fandoms, 
+  pairings = [], 
+  rating, 
+  status, 
+  wordCount, 
+  slug,
+  chapters,
+  isMultiChapter,
+  chapterNumber = 1,
+  chaptersTotal = "1",
+  seriesName,
+  seriesPart
+} = Astro.props;
+
 const ratingClass = rating.toLowerCase();
+
+// Determine display format for the chapters stat line
+const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chaptersTotal}` : "1/1");
 ---
 
 <div class="ao3-blurb">
+  <!-- Optional Series Meta Display -->
+  {seriesName && (
+    <p class="series-meta">
+      Part {seriesPart} of the <a href={`/series/${seriesName.toLowerCase().replace(/ /g, '-')}`}>{seriesName}</a> series
+    </p>
+  )}
+
   <div class="blurb-header">
     <div class="ao3-symbols">
       <span class={`symbol rating-${ratingClass}`} title={`Rating: ${rating}`}></span>
@@ -29,13 +62,23 @@ const ratingClass = rating.toLowerCase();
         <a href={`/fanfics/${slug}`}>{title}</a>
       </h3>
       <div class="fandoms">
-        {fandoms.join(', ')}
+        {fandoms.map((fandom, i) => (
+          <span>
+            <a href={`/fandoms/${fandom.toLowerCase().replace(/ /g, '-')}`}>{fandom}</a>
+            {i < fandoms.length - 1 && ", "}
+          </span>
+        ))}
       </div>
     </div>
   </div>
 
   <ul class="tags-list">
-    {pairings.map(p => <li class="tag pairing"><a href="#">{p}</a></li>)}
+    <!-- Active Relationship Archive Links -->
+    {pairings.map(p => (
+      <li class="tag pairing">
+        <a href={`/pairings/${p.toLowerCase().replace(/[\/ ]/g, '-')}`}>{p}</a>
+      </li>
+    ))}
   </ul>
 
   <blockquote class="summary">
@@ -44,8 +87,12 @@ const ratingClass = rating.toLowerCase();
 
   <dl class="stats">
     <dt>Words:</dt><dd>{wordCount.toLocaleString()}</dd>
-    <dt>Chapters:</dt><dd>{chapters}</dd>
-    <dt>Status:</dt><dd>{status}</dd>
+    <dt>Chapters:</dt><dd>{chaptersDisplay}</dd>
+    <!-- Live Status Link -->
+    <dt>Status:</dt>
+    <dd>
+      <a class="status-link" href={`/status/${status.toLowerCase().replace(/ /g, '-')}`}>{status}</a>
+    </dd>
   </dl>
 </div>
 
@@ -56,6 +103,20 @@ const ratingClass = rating.toLowerCase();
     margin-bottom: 1.5rem;
     background: var(--ao3-blurb-bg);
     font-size: 0.9rem;
+  }
+  .series-meta {
+    font-style: italic;
+    font-size: 0.85rem;
+    margin: 0 0 0.5rem 0;
+    color: #555;
+  }
+  .series-meta a {
+    color: var(--ao3-red);
+    text-decoration: none;
+    font-weight: bold;
+  }
+  .series-meta a:hover {
+    text-decoration: underline;
   }
   .blurb-header { display: flex; align-items: flex-start; margin-bottom: 0.5rem; }
   .ao3-symbols {
@@ -75,12 +136,17 @@ const ratingClass = rating.toLowerCase();
   .status-complete { background-color: var(--rating-general); }
   .status-incomplete { background-color: var(--rating-explicit); }
 
+  .heading { margin: 0; }
   .heading a { color: var(--ao3-red); text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+  .heading a:hover { text-decoration: underline; }
   .fandoms { font-weight: bold; font-size: 0.85rem; margin-top: 0.2rem; }
+  .fandoms a { color: var(--ao3-red); text-decoration: none; }
+  .fandoms a:hover { text-decoration: underline; }
   
   .tags-list { margin: 0.5rem 0; padding: 0; display: block; }
   .tag { display: inline; font-size: 0.85rem; margin-right: 0.5rem; }
   .tag.pairing a { color: var(--ao3-tag-text); font-weight: bold; text-decoration: none; }
+  .tag.pairing a:hover { background: #e2e2e2; }
   .tag::after { content: ","; }
   .tag:last-child::after { content: ""; }
 
@@ -93,4 +159,6 @@ const ratingClass = rating.toLowerCase();
   .stats { margin: 0.5rem 0 0 0; display: flex; font-size: 0.8rem; }
   .stats dt { font-weight: bold; margin-right: 0.25rem; }
   .stats dd { margin-right: 1rem; }
+  .status-link { color: inherit; text-decoration: none; }
+  .status-link:hover { text-decoration: underline; }
 </style>

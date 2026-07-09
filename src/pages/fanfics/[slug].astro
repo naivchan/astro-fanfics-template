@@ -13,17 +13,17 @@ export async function getStaticPaths() {
 const { entry, allFics } = Astro.props;
 const { Content } = await entry.render();
 
-// --- Chapter Navigation Logic ---
+// --- Chapter Navigation Logic (Folder Based) ---
 let siblingChapters = [];
 let prevChapter = null;
 let nextChapter = null;
 
 if (entry.data.isMultiChapter && entry.data.chapterNumber) {
-  // Extract the base work identifier (e.g., "my-story" from "my-story-ch1")
-  const baseWorkId = entry.slug.split('-ch')[0];
+  // Get the folder path of the current file (e.g., "specific-story-folder")
+  const currentFolder = entry.id.split('/')[0];
   
   siblingChapters = allFics
-    .filter(f => f.slug.startsWith(baseWorkId) && f.data.isMultiChapter)
+    .filter(f => f.id.startsWith(currentFolder + '/') && f.data.isMultiChapter)
     .sort((a, b) => (a.data.chapterNumber || 0) - (b.data.chapterNumber || 0));
 
   prevChapter = siblingChapters.find(ch => ch.data.chapterNumber === entry.data.chapterNumber - 1);

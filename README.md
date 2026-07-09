@@ -1,3 +1,5 @@
+This project was coded with the assistance of Gemini. 
+
 ### Frontmatter Reference Template
 Example frontmatter for fanfic markdown files stored in `src/content/fanfics`:
 

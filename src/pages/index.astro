@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
-import FicBlurb from '../components/FicBlurb.astro'; // Assuming it lives in src/components/
+import FicBlurb from '../components/FicBlurb.astro'; 
 
 // Fetch all fics and sort them newest first
 const allFics = await getCollection('fanfics');
@@ -13,7 +13,12 @@ const uniqueWorks = sortedFics.filter((fic) => {
   return fic.data.chapterNumber === 1;
 });
 
-// Dynamically gather unique filter criteria across your works for the sidebar checkboxes
+// --- 📊 DYNAMIC STATS CALCULATIONS ---
+const totalWorksCount = uniqueWorks.length;
+const totalWordCount = allFics.reduce((sum, fic) => sum + (fic.data.wordCount || 0), 0);
+const uniqueFandomsCount = [...new Set(uniqueWorks.flatMap(f => f.data.fandoms || []))].length;
+const ongoingWorksCount = uniqueWorks.filter(f => f.data.status?.toLowerCase() === 'in progress' || f.data.status?.toLowerCase() === 'ongoing').length;
+
 const uniqueFandoms = [...new Set(uniqueWorks.flatMap(f => f.data.fandoms || []))].sort();
 const uniquePairings = [...new Set(uniqueWorks.flatMap(f => f.data.pairings || []))].sort();
 const uniqueRatings = [...new Set(uniqueWorks.map(f => f.data.rating).filter(Boolean))];
@@ -21,11 +26,7 @@ const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Bo
 ---
 
 <Layout title="Works Archive">
-  <main class="archive-container">
-    <header class="archive-header">
-      <h1>Works Archive</h1>
-      <p class="subtitle">Latest creative fiction and ongoing narratives</p>
-    </header>
+  <main class="main-content archive-container">
 
     <nav class="archive-nav">
       <div class="nav-links">
@@ -34,7 +35,33 @@ const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Bo
       </div>
     </nav>
 
+    <div class="archive-stats-bar">
+      <div class="stat-pill">
+        <span class="stat-icon">📚</span>
+        <span class="stat-label">Works:</span>
+        <span class="stat-value">{totalWorksCount}</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-icon">✍️</span>
+        <span class="stat-label">Total Words:</span>
+        <span class="stat-value">{totalWordCount.toLocaleString()}</span> </div>
+      <div class="stat-pill">
+        <span class="stat-icon">✨</span>
+        <span class="stat-label">Fandoms:</span>
+        <span class="stat-value">{uniqueFandomsCount}</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-icon">⏳</span>
+        <span class="stat-label">Ongoing:</span>
+        <span class="stat-value">{ongoingWorksCount}</span>
+      </div>
+    </div>
+
     <hr class="nav-divider" />
+
+    <button id="mobile-filter-toggle" class="mobile-filter-btn" aria-expanded="false">
+      <span class="btn-icon">⚙️</span> Filter & Refine Works
+    </button>
 
     <div class="archive-layout">
       
@@ -44,38 +71,43 @@ const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Bo
         </div>
 
         <div class="works-feed">
-          {uniqueWorks.map((fic) => (
-            <div 
-              class="filterable-work-card"
-              data-fandoms={JSON.stringify(fic.data.fandoms || [])}
-              data-pairings={JSON.stringify(fic.data.pairings || [])}
-              data-rating={fic.data.rating}
-              data-status={fic.data.status}
-            >
-              <FicBlurb 
-                title={fic.data.title}
-                slug={fic.slug}
-                summary={fic.data.summary}
-                pubDate={fic.data.pubDate}
-                fandoms={fic.data.fandoms}
-                pairings={fic.data.pairings || []}
-                rating={fic.data.rating}
-                status={fic.data.status}
-                wordCount={fic.data.wordCount}
-                isMultiChapter={fic.data.isMultiChapter}
-                chapterNumber={fic.data.chapterNumber || 1}
-                chaptersTotal={fic.data.chaptersTotal || "1"}
-                seriesName={fic.data.seriesName}
-                seriesPart={fic.data.seriesPart}
-              />
-            </div>
-          ))}
+            {uniqueWorks.map((fic) => {
+              return (
+              <div 
+                class="filterable-work-card"
+                data-fandoms={JSON.stringify(fic.data.fandoms || [])}
+                data-pairings={JSON.stringify(fic.data.pairings || [])}
+                data-rating={fic.data.rating}
+                data-status={fic.data.status}
+              >
+                <FicBlurb 
+                  title={fic.data.title}
+                  slug={fic.slug}
+                  summary={fic.data.summary}
+                  pubDate={fic.data.pubDate}
+                  fandoms={fic.data.fandoms}
+                  pairings={fic.data.pairings || []}
+                  rating={fic.data.rating}
+                  status={fic.data.status}
+                  wordCount={fic.data.wordCount}
+                  category={fic.data.category}
+                  warnings={fic.data.warnings}
+                  isMultiChapter={fic.data.isMultiChapter}
+                  chapterNumber={fic.data.chapterNumber} 
+                  chaptersTotal={fic.data.chaptersTotal}
+                  seriesName={fic.data.seriesName}
+                  seriesPart={fic.data.seriesPart}
+                />
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      <aside class="filter-sidebar">
+      <aside class="filter-sidebar mobile-drawer" id="filter-sidebar">
         <div class="sidebar-header">
           <h3>Filter Results</h3>
+          <button id="mobile-filter-close" class="mobile-close-btn" aria-label="Close filters">×</button>
         </div>
         
         <form id="filter-form">
@@ -136,6 +168,23 @@ const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Bo
   const cards = document.querySelectorAll('.filterable-work-card') as NodeListOf<HTMLElement>;
   const summary = document.getElementById('results-summary');
   const resetBtn = document.getElementById('reset-filters');
+  const openDrawerBtn = document.getElementById('mobile-filter-toggle');
+  const closeDrawerBtn = document.getElementById('mobile-filter-close');
+  const sidebarDrawer = document.getElementById('filter-sidebar');
+
+  openDrawerBtn?.addEventListener('click', () => {
+    sidebarDrawer?.classList.add('is-open');
+    openDrawerBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  });
+
+  function closeDrawer() {
+    sidebarDrawer?.classList.remove('is-open');
+    openDrawerBtn?.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  closeDrawerBtn?.addEventListener('click', closeDrawer);
 
   function updateFilters() {
     const formData = new FormData(form);
@@ -172,7 +221,10 @@ const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Bo
 
   form?.addEventListener('change', updateFilters);
   resetBtn?.addEventListener('click', () => {
-    setTimeout(updateFilters, 10);
+    setTimeout(() => {
+      updateFilters();
+      closeDrawer();
+    }, 10);
   });
 </script>
 

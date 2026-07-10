@@ -10,8 +10,10 @@ const fanfics = defineCollection({
     fandoms: z.array(z.string()),
     pairings: z.array(z.string()).optional(),
     rating: z.enum(['General', 'Teen', 'Mature', 'Explicit']),
-    status: z.enum(['Complete', 'In Progress', 'Hiatus']),
+    category: z.enum(['Gen', 'M/M', 'F/F', 'F/M', 'Multi', 'Other']).default('Gen'),
+    status: z.enum(['Complete', 'In Progress', 'Hiatus']).default('In Progress'),
     wordCount: z.number(),
+    warnings: z.array(z.string()).default(["No Archive Warnings Apply"]),
     
     // --- Multi-Chapter Work Logic (Single Fic) ---
     isMultiChapter: z.boolean().default(false),

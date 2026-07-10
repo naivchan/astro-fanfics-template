@@ -1,7 +1,10 @@
 ---
+import { getCollection } from 'astro:content'; 
+
 interface Props {
   title: string;
   summary: string;
+  pubDate: Date; 
   fandoms: string[];
   pairings?: string[];
   rating: 'General' | 'Teen' | 'Mature' | 'Explicit';
@@ -24,6 +27,7 @@ interface Props {
 const { 
   title, 
   summary, 
+  pubDate,
   fandoms, 
   pairings = [], 
   rating, 
@@ -40,6 +44,36 @@ const {
   seriesPart
 } = Astro.props;
 
+// --- AUTOMATIC COMPONENT SMART MATH ---
+let displayWords = wordCount;
+let displayChaptersTotal = chaptersTotal;
+let displayChapterNumber = chapterNumber;
+
+if (isMultiChapter) {
+  // Fetch all fics right here inside the component
+  const allFics = await getCollection('fanfics');
+  const siblings = allFics.filter(f => f.data.title === title);
+  
+  // 1. Overwrite the total words dynamically
+  displayWords = siblings.reduce((sum, s) => sum + (s.data.wordCount || 0), 0);
+  
+  // 2. Find the highest chapter number written
+  const postedChapterNumbers = siblings.map(s => s.data.chapterNumber || 1);
+  const highestChapterPosted = Math.max(...postedChapterNumbers);
+  
+  // 3. Match the logic based on Chapter 1's true master status
+  const chapterOne = siblings.find(s => s.data.chapterNumber === 1);
+  const masterStatus = chapterOne ? chapterOne.data.status : status;
+
+  if (masterStatus === 'Complete') {
+    displayChapterNumber = siblings.length;
+    displayChaptersTotal = siblings.length;
+  } else {
+    displayChapterNumber = highestChapterPosted;
+    displayChaptersTotal = chaptersTotal;
+  }
+} 
+
 const ratingClass = rating.toLowerCase();
 const categoryClass = category.toLowerCase().replace('/', '-');
 
@@ -47,10 +81,16 @@ const categoryClass = category.toLowerCase().replace('/', '-');
 const hasMajorWarnings = warnings.some(w => w !== "No Archive Warnings Apply" && w !== "Choose Not To Use Archive Warnings");
 const warningClass = hasMajorWarnings ? "major-warning" : "safe-warning";
 
-const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chaptersTotal}` : "1/1");
+const chaptersDisplay = chapters || (isMultiChapter ? `${displayChapterNumber}/${displayChaptersTotal}` : "1/1");
+
+const formattedDate = pubDate ? new Date(pubDate).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric'
+}) : '';
 ---
 
-<div class="ao3-blurb">
+<div class="fuwari-blurb">
   {seriesName && (
     <p class="series-meta">
       Part {seriesPart} of the <a href={`/series/${seriesName.toLowerCase().replace(/ /g, '-')}`}>{seriesName}</a> series
@@ -58,25 +98,33 @@ const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chapte
   )}
 
   <div class="blurb-header">
-    <!-- Complete 4-Square AO3 Badge Grid -->
-    <div class="ao3-symbols">
-      <span class={`symbol rating-${ratingClass}`} title={`Rating: ${rating}`}></span>
-      <span class={`symbol category-${categoryClass}`} title={`Category: ${category}`}>
-        <span class="symbol-text">{category.charAt(0)}</span>
+    <!-- Fuwari Soft Badge Dots -->
+    <div class="fuwari-symbols">
+      <span class={`dot rating-${ratingClass}`} title={`Rating: ${rating}`}></span>
+      <span class={`dot category-${categoryClass}`} title={`Category: ${category}`}>
+        <span class="dot-text">{category.charAt(0)}</span>
       </span>
-      <span class={`symbol warning-${warningClass}`} title={`Warnings: ${warnings.join(', ')}`}></span>
-      <span class={`symbol status-${status === 'Complete' ? 'complete' : 'incomplete'}`} title={`Status: ${status}`}></span>
+      <span class={`dot warning-${warningClass}`} title={`Warnings: ${warnings.join(', ')}`}></span>
+      <span class={`dot status-${status === 'Complete' ? 'complete' : 'incomplete'}`} title={`Status: ${status}`}></span>
     </div>
 
     <div class="title-block">
       <h3 class="heading">
-        <a href={`/fanfics/${slug}`}>{title}</a>
+        {isMultiChapter ? (
+          /* Link to the index page we just created in work.astro */
+          <a href={`/fanfics/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+            {title}
+          </a>
+        ) : (
+          /* Link directly to the single-chapter/one-shot reading view */
+          <a href={`/fanfics/${slug}`}>{title}</a>
+        )}
       </h3>
       <div class="fandoms">
         {fandoms.map((fandom, i) => (
-          <span>
+          <span class="fandom-item">
             <a href={`/fandoms/${fandom.toLowerCase().replace(/ /g, '-')}`}>{fandom}</a>
-            {i < fandoms.length - 1 && ", "}
+            {i < fandoms.length - 1 && <span class="fandom-comma">, </span>}
           </span>
         ))}
       </div>
@@ -99,14 +147,28 @@ const chaptersDisplay = chapters || (isMultiChapter ? `${chapterNumber}/${chapte
     <p>{summary}</p>
   </blockquote>
 
-  <dl class="stats">
-    <dt>Words:</dt><dd>{wordCount.toLocaleString()}</dd>
-    <dt>Chapters:</dt><dd>{chaptersDisplay}</dd>
-    <dt>Status:</dt>
-    <dd>
-      <a class="status-link" href={`/status/${status.toLowerCase().replace(/ /g, '-')}`}>{status}</a>
-    </dd>
-  </dl>
+  <div class="stats-footer">
+    <dl class="stats">
+      <div class="stat-group">
+        <dt>Words</dt>
+        <dd>{displayWords.toLocaleString()}</dd>
+      </div>
+      <div class="stat-group">
+        <dt>Chapters</dt>
+        <dd>{chaptersDisplay}</dd>
+      </div>
+      <div class="stat-group">
+        <dt>Status</dt>
+        <dd>
+          <a class="status-link" href={`/status/${status.toLowerCase().replace(/ /g, '-')}`}>{status}</a>
+        </dd>
+      </div>
+      <div class="stat-group" style="margin-left: auto; text-align: right;">
+        <dt>Published</dt>
+        <dd>{formattedDate}</dd>
+      </div>
+    </dl>
+  </div>
 </div>
 
 <style>

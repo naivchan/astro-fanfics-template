@@ -1,0 +1,74 @@
+---
+// src/pages/fanfics/[work].astro
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const fics = await getCollection('fanfics');
+  
+  // Filter for only multi-chapter works
+  const multiChapterWorks = fics.filter(f => f.data.isMultiChapter === true);
+  
+  // Get unique titles to create an index for each work
+  const uniqueWorkTitles = [...new Set(multiChapterWorks.map(f => f.data.title))];
+
+  return uniqueWorkTitles.map(workTitle => {
+    // Generate a consistent slug from the title
+    const workSlug = workTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    
+    return {
+      params: { work: workSlug },
+      props: { 
+        workTitle, 
+        // Get all chapters for this specific work
+        chapters: fics
+          .filter(f => f.data.title === workTitle && f.data.isMultiChapter)
+          .sort((a, b) => (a.data.chapterNumber || 0) - (b.data.chapterNumber || 0))
+      }
+    };
+  });
+}
+
+const { workTitle, chapters } = Astro.props;
+---
+
+<Layout title={`${workTitle} - Table of Contents`}>
+  <main class="fanfic-layout">
+    <nav class="archive-nav">
+      <a href="/" class="nav-item">← Back to Main Archive</a>
+    </nav>
+
+    <header class="work-index-header">
+      <span class="work-badge">Multi-Chapter Work</span>
+      <h1>{workTitle}</h1>
+      <div class="work-meta-row">
+        <span>📋 Chapters: {chapters.length}</span>
+        <span>✍️ Words: {chapters.reduce((sum, c) => sum + (c.data.wordCount || 0), 0).toLocaleString()}</span>
+      </div>
+      {chapters[0]?.data.summary && (
+        <div class="work-index-summary">
+          <strong>Description:</strong>
+          <p>{chapters[0].data.summary}</p>
+        </div>
+      )}
+    </header>
+
+    <section class="chapter-directory-section">
+      <h2>Table of Contents</h2>
+      <ol class="chapter-index-list">
+        {chapters.map((chapter) => (
+          <li>
+            <a href={`/fanfics/${chapter.slug}`} class="chapter-index-item">
+              <div class="chapter-number-badge">Ch. {chapter.data.chapterNumber}</div>
+              <div class="chapter-item-details">
+                <span class="chapter-title">{chapter.data.chapterTitle || `Chapter ${chapter.data.chapterNumber}`}</span>
+                <span class="chapter-item-meta">{chapter.data.wordCount?.toLocaleString()} words</span>
+              </div>
+              <span class="read-arrow">Read →</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+  </main>
+</Layout>

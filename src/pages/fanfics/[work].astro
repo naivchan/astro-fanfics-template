@@ -72,3 +72,169 @@ const { workTitle, chapters } = Astro.props;
     </section>
   </main>
 </Layout>
+
+<style>
+  .fanfic-layout {
+    max-width: 1080px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* --- NAVIGATION --- */
+  .archive-nav {
+    border-bottom: 1px solid var(--ao3-border, #ccc);
+    padding-bottom: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  .nav-item {
+    color: var(--ao3-red, #900);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  .nav-item:hover {
+    text-decoration: underline;
+  }
+
+  /* --- INDEX HEADER CONTAINER --- */
+  .work-index-header {
+    text-align: center;
+    border-bottom: 2px solid var(--ao3-border, #ccc);
+    padding-bottom: 2rem;
+    margin-bottom: 2.5rem;
+  }
+  .work-badge {
+    display: inline-block;
+    background: #eaeaea;
+    border: 1px solid var(--ao3-border, #ccc);
+    color: #444;
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    margin-bottom: 0.75rem;
+  }
+  .work-index-header h1 {
+    font-family: Georgia, serif;
+    font-size: 2.5rem;
+    font-weight: normal;
+    margin: 0 0 1rem 0;
+    color: #333;
+  }
+  .work-meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+
+  /* --- DESCRIPTION / SUMMARY --- */
+  .work-index-summary {
+    background: #f4f4f4;
+    border: 1px solid var(--ao3-border, #ccc);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  .work-index-summary strong {
+    color: #333;
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+  .work-index-summary p {
+    margin: 0;
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  /* --- TABLE OF CONTENTS DIRECTORY --- */
+  .chapter-directory-section h2 {
+    font-family: Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: normal;
+    color: #333;
+    margin-bottom: 1.5rem;
+  }
+  .chapter-index-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .chapter-index-list li {
+    display: block;
+  }
+  .chapter-index-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fbfbfb;
+    border: 1px solid var(--ao3-border, #ccc);
+    border-radius: 4px;
+    padding: 0.75rem 1.25rem;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+  .chapter-index-item:hover {
+    background: #f4f4f4;
+    border-color: #bbb;
+  }
+
+  /* Structural Content Alignment */
+  .chapter-item-details {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+  }
+  .chapter-number-badge {
+    font-weight: bold;
+    color: #666;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+  .chapter-title {
+    color: var(--ao3-red, #900);
+    font-weight: bold;
+    font-size: 1.05rem;
+  }
+  .chapter-index-item:hover .chapter-title {
+    text-decoration: underline;
+  }
+  .chapter-item-meta {
+    font-size: 0.85rem;
+    color: #666;
+  }
+  .read-arrow {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--ao3-red, #900);
+    margin-left: 1rem;
+    white-space: nowrap;
+  }
+
+  /* Mobile Tweaks */
+  @media (max-width: 600px) {
+    .chapter-index-item {
+      padding: 0.75rem 1rem;
+    }
+    .chapter-item-details {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .chapter-item-meta {
+      font-size: 0.8rem;
+    }
+  }
+</style>

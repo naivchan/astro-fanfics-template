@@ -229,15 +229,27 @@ const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Bo
 </script>
 
 <style>
+  /* --- 🏛️ AO3 GLOBAL SETTINGS & PALETTE --- */
+  :root {
+    --ao3-red: #990000;
+    --ao3-light-red: #faecec;
+    --ao3-border-gray: #ccc;
+    --ao3-bg-gray: #eee;
+    --ao3-text-dark: #333;
+  }
+
   .archive-container {
-    max-width: 1080px; /* Widened slightly to accommodate the sidebar without squeezing your original content size */
+    max-width: 1200px; /* Widened slightly for the desktop sidebar layout */
     margin: 2rem auto;
     padding: 0 1rem;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: "Lucida Grande", "Lucida Sans Unicode", "GNU Unifont", Verdana, Helvetica, sans-serif;
+    color: var(--ao3-text-dark);
   }
+
+  /* --- 🏷️ HEADER & NAVIGATION (KEPT FROM YOUR ORIGINAL) --- */
   .archive-header {
     text-align: center;
-    border-bottom: 2px solid var(--ao3-border, #ccc);
+    border-bottom: 2px solid var(--ao3-border-gray);
     padding-bottom: 1rem;
     margin-bottom: 2.5rem;
   }
@@ -255,13 +267,11 @@ const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Bo
   .works-feed {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem; /* Let FicBlurb handle its own internal styling and padding */
+    gap: 1.5rem;
   }
-
-  /* Added Navigation Interface Styles */
   .archive-nav {
     background: #eaeaea;
-    border: 1px solid var(--ao3-border, #ccc);
+    border: 1px solid var(--ao3-border-gray);
     border-radius: 4px;
     padding: 0.75rem 1rem;
     margin: 1rem auto 1.5rem auto;
@@ -273,7 +283,7 @@ const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Bo
     gap: 2rem;
   }
   .nav-item {
-    color: var(--ao3-red, #900);
+    color: var(--ao3-red);
     text-decoration: none;
     font-weight: bold;
     font-size: 1rem;
@@ -289,23 +299,57 @@ const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Bo
   }
   .nav-divider {
     border: 0;
-    border-top: 1px solid var(--ao3-border, #ccc);
+    border-top: 1px solid var(--ao3-border-gray);
     margin-bottom: 2rem;
   }
 
-  /* Filtering Layout Styles */
-  .archive-layout {
+  /* --- 📊 AO3 DYNAMIC STATS BAR --- */
+  .archive-stats-bar {
     display: flex;
-    gap: 2rem;
-    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    background-color: var(--ao3-bg-gray);
+    border: 1px solid var(--ao3-border-gray);
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding-right: 1rem;
+    border-right: 1px solid var(--ao3-border-gray);
+  }
+  .stat-pill:last-child {
+    border-right: none;
+  }
+  .stat-icon {
+    display: none; /* AO3 relies on text layouts over icons */
+  }
+  .stat-label {
+    font-weight: bold;
+    color: var(--ao3-text-dark);
+  }
+  .stat-value {
+    color: var(--ao3-red);
+    font-weight: bold;
+  }
+
+  /* --- 🎛️ ARCHIVE LAYOUT & SIDEBAR --- */
+  .archive-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px; /* Traditional AO3 right-aligned layout */
+    gap: 1.5rem;
+    align-items: start;
   }
   .feed-column {
-    flex: 1;
-    min-width: 0;
+    order: 1;
   }
   .filter-results-summary {
     background: #f4f4f4;
-    border: 1px solid var(--ao3-border, #ccc);
+    border: 1px solid var(--ao3-border-gray);
     padding: 0.4rem 0.75rem;
     margin-bottom: 1rem;
     font-size: 0.85rem;
@@ -314,76 +358,157 @@ const uniqueStatuses = [...new Set(uniqueWorks.map(f => f.data.status).filter(Bo
     border-radius: 3px;
   }
   .filter-sidebar {
-    width: 260px;
-    background: #fbfbfb;
-    border: 1px solid var(--ao3-border, #ccc);
+    order: 2;
+    background: #fff;
+    border: 1px solid var(--ao3-border-gray);
     border-radius: 4px;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
     padding: 1rem;
-    flex-shrink: 0;
   }
   .sidebar-header h3 {
-    margin: 0 0 1rem 0;
+    margin-top: 0;
     font-family: Georgia, serif;
-    color: #900;
+    color: var(--ao3-red);
+    border-bottom: 1px solid var(--ao3-border-gray);
+    padding-bottom: 0.5rem;
     font-size: 1.2rem;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 0.25rem;
     font-weight: normal;
   }
+  .sidebar-header .mobile-close-btn {
+    display: none;
+  }
+
+  /* --- 📂 AO3 FILTER DETAILS GROUP --- */
   .filter-group {
+    border: 1px solid var(--ao3-border-gray);
+    border-radius: 4px;
     margin-bottom: 0.75rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.5rem;
+    background: #fff;
   }
   .filter-group summary {
+    background: var(--ao3-bg-gray);
+    padding: 0.4rem 0.6rem;
     font-weight: bold;
-    font-size: 0.9rem;
     cursor: pointer;
-    color: #333;
-    outline: none;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--ao3-border-gray);
+    list-style: none;
     user-select: none;
   }
+  .filter-group summary::-webkit-details-marker {
+    display: none;
+  }
   .filter-choices {
+    padding: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
-    padding: 0.5rem 0.25rem 0.25rem 0.5rem;
-    max-height: 180px;
-    overflow-y: auto;
   }
   .choice-label {
     font-size: 0.85rem;
-    color: #444;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.4rem;
     cursor: pointer;
+    color: #444;
   }
-  .choice-label input {
+  .choice-label input[type="checkbox"] {
+    margin-top: 0.15rem;
     cursor: pointer;
   }
+
+  /* --- 🛑 AO3 PLAIN GRADIENT BUTTONS --- */
   .ao3-button {
+    display: block;
     width: 100%;
-    background: #e1e1e1;
+    text-align: center;
+    background: #eee;
+    background: linear-gradient(#fff, #e1e1e1);
     border: 1px solid #bbb;
-    border-radius: 3px;
+    border-color: #bbb #aaa #999;
+    border-radius: 4px;
     padding: 0.4rem;
     font-size: 0.85rem;
     font-weight: bold;
     color: #333;
     cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.05);
     margin-top: 0.5rem;
   }
   .ao3-button:hover {
-    background: #d4d4d4;
+    background: #ddd;
+    background: linear-gradient(#eee, #ccc);
+    border-color: #999 #888 #777;
+    color: #222;
+  }
+
+  /* --- 📱 RESPONSIVE & MOBILE DRAWING SYSTEM --- */
+  .mobile-filter-btn {
+    display: none; /* Completely hidden on desktop */
   }
 
   @media (max-width: 768px) {
-    .archive-layout {
-      flex-direction: column-reverse;
-    }
-    .filter-sidebar {
+    .mobile-filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--ao3-red);
+      color: white;
+      border: 1px solid #700;
+      padding: 0.6rem 1rem;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-bottom: 1rem;
       width: 100%;
+      justify-content: center;
+    }
+    .archive-layout {
+      grid-template-columns: 1fr;
+    }
+    .feed-column {
+      order: 2;
+    }
+    .filter-sidebar.mobile-drawer {
+      order: 1;
+      position: fixed;
+      top: 0;
+      right: -100%; /* Hidden off-screen by default */
+      width: 85%;
+      max-width: 340px;
+      height: 100vh;
+      background: white;
+      z-index: 1000;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+      transition: right 0.3s ease;
+      overflow-y: auto;
+      padding: 1.5rem;
+      box-sizing: border-box;
+    }
+    .filter-sidebar.mobile-drawer.is-open {
+      right: 0; /* Sliding into view via JS toggle triggers */
+    }
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .sidebar-header h3 {
+      border-bottom: none;
+      margin: 0;
+    }
+    .sidebar-header .mobile-close-btn {
+      display: block;
+      background: transparent;
+      border: none;
+      font-size: 1.75rem;
+      color: #666;
+      cursor: pointer;
+      line-height: 1;
     }
   }
 </style>

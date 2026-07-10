@@ -90,7 +90,7 @@ const formattedDate = pubDate ? new Date(pubDate).toLocaleDateString('en-US', {
 }) : '';
 ---
 
-<div class="fuwari-blurb">
+<div class="ao3-blurb">
   {seriesName && (
     <p class="series-meta">
       Part {seriesPart} of the <a href={`/series/${seriesName.toLowerCase().replace(/ /g, '-')}`}>{seriesName}</a> series
@@ -98,20 +98,20 @@ const formattedDate = pubDate ? new Date(pubDate).toLocaleDateString('en-US', {
   )}
 
   <div class="blurb-header">
-    <!-- Fuwari Soft Badge Dots -->
-    <div class="fuwari-symbols">
-      <span class={`dot rating-${ratingClass}`} title={`Rating: ${rating}`}></span>
-      <span class={`dot category-${categoryClass}`} title={`Category: ${category}`}>
-        <span class="dot-text">{category.charAt(0)}</span>
+    <!-- Authentic Grid Layout Elements -->
+    <div class="ao3-symbols">
+      <span class={`symbol rating-${ratingClass}`} title={`Rating: ${rating}`}></span>
+      <span class={`symbol category-${categoryClass}`} title={`Category: ${category}`}>
+        <span class="symbol-text">{category.charAt(0)}</span>
       </span>
-      <span class={`dot warning-${warningClass}`} title={`Warnings: ${warnings.join(', ')}`}></span>
-      <span class={`dot status-${status === 'Complete' ? 'complete' : 'incomplete'}`} title={`Status: ${status}`}></span>
+      <span class={`symbol warning-${warningClass}`} title={`Warnings: ${warnings.join(', ')}`}></span>
+      <span class={`symbol status-${status === 'Complete' ? 'complete' : 'incomplete'}`} title={`Status: ${status}`}></span>
     </div>
 
     <div class="title-block">
       <h3 class="heading">
         {isMultiChapter ? (
-          /* Link to the index page we just created in work.astro */
+          /* Link to the index page created in work.astro */
           <a href={`/fanfics/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
             {title}
           </a>
@@ -137,7 +137,6 @@ const formattedDate = pubDate ? new Date(pubDate).toLocaleDateString('en-US', {
         <a href={`/pairings/${p.toLowerCase().replace(/[\/ ]/g, '-')}`}>{p}</a>
       </li>
     ))}
-    <!-- Show archive warning tags in the main tag list block -->
     {warnings.map(w => (
       <li class="tag warning-tag"><a href="#">{w}</a></li>
     ))}
@@ -149,22 +148,22 @@ const formattedDate = pubDate ? new Date(pubDate).toLocaleDateString('en-US', {
 
   <div class="stats-footer">
     <dl class="stats">
-      <div class="stat-group">
-        <dt>Words</dt>
+      <div class="stat-group" style="display: flex; align-items: baseline;">
+        <dt>Words:</dt>
         <dd>{displayWords.toLocaleString()}</dd>
       </div>
-      <div class="stat-group">
-        <dt>Chapters</dt>
+      <div class="stat-group" style="display: flex; align-items: baseline;">
+        <dt>Chapters:</dt>
         <dd>{chaptersDisplay}</dd>
       </div>
-      <div class="stat-group">
-        <dt>Status</dt>
+      <div class="stat-group" style="display: flex; align-items: baseline;">
+        <dt>Status:</dt>
         <dd>
           <a class="status-link" href={`/status/${status.toLowerCase().replace(/ /g, '-')}`}>{status}</a>
         </dd>
       </div>
-      <div class="stat-group" style="margin-left: auto; text-align: right;">
-        <dt>Published</dt>
+      <div class="stat-group" style="margin-left: auto; text-align: right; display: flex; align-items: baseline;">
+        <dt>Published:</dt>
         <dd>{formattedDate}</dd>
       </div>
     </dl>

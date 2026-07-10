@@ -18,6 +18,7 @@ const fanfics = defineCollection({
     // --- Multi-Chapter Work Logic (Single Fic) ---
     isMultiChapter: z.boolean().default(false),
     chapterNumber: z.number().optional(), // Chapter 1, 2, etc.
+    chapterTitle: z.string().optional(),
     chaptersTotal: z.string().default("1"), // The "1" or "?" in "1/1" or "1/?"
     
     // --- Series Logic (Multi-Work Collection) ---
